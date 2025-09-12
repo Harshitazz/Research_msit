@@ -1,0 +1,11 @@
+tensorflow
+transformers
+datasets
+opencv-python
+spotipy
+fastapi
+uvicorn
+streamlit
+python-multipart
+pillow
+requests

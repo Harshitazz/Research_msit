@@ -16,7 +16,11 @@ app.add_middleware(
 
 @app.post("/analyze/")
 async def analyze_emotion(file: UploadFile = File(...)):
-    contents = await file.read()
-    emotion = predict_emotion(contents)
-    playlists = get_playlist_for_emotion(emotion)
-    return {"emotion": emotion, "playlists": playlists}
+    try:
+        contents = await file.read()
+        emotion = predict_emotion(contents)
+        playlists = get_playlist_for_emotion(emotion)
+        return {"emotion": emotion, "playlists": playlists}
+    except Exception as e:
+        print("Error in /analyze/:", e)
+        return {"emotion": "Error", "playlists": [], "error": str(e)}

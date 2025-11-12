@@ -58,45 +58,132 @@ st.title("🎵 Emotion-Based Music Recommendation")
 BACKEND_URL = "http://localhost:8000/analyze/"
 
 # --- Choose input method ---
-input_method = st.radio("Select Input Method:", ["Upload Image", "Capture from Webcam"])
+st.header("Input Method")
+image_use = st.checkbox("Use image recognition")
+text_use = st.checkbox("Use text sentiment analysis")
 
-image_bytes = None
+if image_use and text_use:
+    st.subheader("Image Input + Text Input")
+    input_method = st.radio("Select Input Method:", ["Upload Image", "Capture from Webcam"])
 
-if input_method == "Upload Image":
-    uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
-    if uploaded_file is not None:
-        image_bytes = uploaded_file.read()
-        st.image(Image.open(uploaded_file), caption="Uploaded Image", width=300)
+    image_bytes = None
 
-elif input_method == "Capture from Webcam":
-    captured_file = st.camera_input("Capture your image")
-    if captured_file is not None:
-        image_bytes = captured_file.read()
-        st.image(Image.open(captured_file), caption="Captured Image", width=300)
+    if input_method == "Upload Image":
+        uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
+        if uploaded_file is not None:
+            image_bytes = uploaded_file.read()
+            st.image(Image.open(uploaded_file), caption="Uploaded Image", width=300)
 
-# --- Send to backend ---
-if image_bytes is not None:
-    if st.button("Analyze Emotion"):
-        try:
-            files = {"file": ("image.jpg", image_bytes, "image/jpeg")}
-            response = requests.post(BACKEND_URL, files=files, timeout=30)
-            data = response.json()
+    elif input_method == "Capture from Webcam":
+        captured_file = st.camera_input("Capture your image")
+        if captured_file is not None:
+            image_bytes = captured_file.read()
+            st.image(Image.open(captured_file), caption="Captured Image", width=300)
+    
+    text_input = st.text_area("Enter text to analyze sentiment:")
+
+    # --- Send to backend ---
+    if image_bytes is not None and text_input.strip() != "":
+        if st.button("Analyze Emotion"):
+            try:
+                files = {"file": ("image.jpg", image_bytes, "image/jpeg")}
+                text_data = {"text": text_input}
+                response = requests.post(BACKEND_URL, data=text_data, files=files, timeout=30)
+                data = response.json()
             
-            emotion = data.get("emotion")
-            playlists = data.get("playlists", [])
+                emotion = data.get("emotion")
+                playlists = data.get("playlists", [])
 
-            st.success(f"Detected Emotion: {emotion}")
+                st.success(f"Detected Emotion: {emotion}")
 
-            if playlists:
-                st.subheader("🎶 Recommended Playlists:")
-                for p in playlists:
-                    if not p or "image" not in p or not p["image"]:
-                        continue
-                    st.image(p["image"], width=150)
-                    st.markdown(f"[{p['name']}]({p['url']})")
-            else:
-                st.info("No playlists found for this emotion.")
+                if playlists:
+                    st.subheader("🎶 Recommended Playlists:")
+                    for p in playlists:
+                        if not p or "image" not in p or not p["image"]:
+                            continue
+                        st.image(p["image"], width=150)
+                        st.markdown(f"[{p['name']}]({p['url']})")
+                else:
+                    st.info("No playlists found for this emotion.")
 
-        except Exception as e:
-            st.error(f"Error contacting backend: {e}")
+            except Exception as e:
+                st.error(f"Error contacting backend: {e}")
 
+elif image_use:
+    st.subheader("Image Input")
+    input_method = st.radio("Select Input Method:", ["Upload Image", "Capture from Webcam"])
+
+    image_bytes = None
+
+    if input_method == "Upload Image":
+        uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
+        if uploaded_file is not None:
+            image_bytes = uploaded_file.read()
+            st.image(Image.open(uploaded_file), caption="Uploaded Image", width=300)
+
+    elif input_method == "Capture from Webcam":
+        captured_file = st.camera_input("Capture your image")
+        if captured_file is not None:
+            image_bytes = captured_file.read()
+            st.image(Image.open(captured_file), caption="Captured Image", width=300)
+
+    # --- Send to backend ---
+    if image_bytes is not None:
+        if st.button("Analyze Emotion"):
+            try:
+                files = {"file": ("image.jpg", image_bytes, "image/jpeg")}
+                text_data = {"text": ""}
+                response = requests.post(BACKEND_URL, data=text_data, files=files, timeout=30)
+                data = response.json()
+            
+                emotion = data.get("emotion")
+                playlists = data.get("playlists", [])
+
+                st.success(f"Detected Emotion: {emotion}")
+
+                if playlists:
+                    st.subheader("🎶 Recommended Playlists:")
+                    for p in playlists:
+                        if not p or "image" not in p or not p["image"]:
+                            continue
+                        st.image(p["image"], width=150)
+                        st.markdown(f"[{p['name']}]({p['url']})")
+                else:
+                    st.info("No playlists found for this emotion.")
+
+            except Exception as e:
+                st.error(f"Error contacting backend: {e}")
+
+elif text_use:
+    st.subheader("Text Input")
+    text_input = st.text_area("Enter text to analyze sentiment:")
+
+    # --- Send to backend ---
+    if text_input.strip() != "":
+        if st.button("Analyze Emotion"):
+            try:
+                files = {"file": ("", "", "application/octet-stream")}
+                text_data = {"text": text_input}
+                response = requests.post(BACKEND_URL, data=text_data, files=files, timeout=30)
+                data = response.json()
+            
+                emotion = data.get("emotion")
+                playlists = data.get("playlists", [])
+
+                st.success(f"Detected Emotion: {emotion}")
+
+                if playlists:
+                    st.subheader("🎶 Recommended Playlists:")
+                    for p in playlists:
+                        if not p or "image" not in p or not p["image"]:
+                            continue
+                        st.image(p["image"], width=150)
+                        st.markdown(f"[{p['name']}]({p['url']})")
+                else:
+                    st.info("No playlists found for this emotion.")
+
+            except Exception as e:
+                st.error(f"Error contacting backend: {e}")
+
+else:
+    st.info("Please select at least one input method (image or text) to proceed.")

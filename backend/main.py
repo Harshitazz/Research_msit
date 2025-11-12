@@ -1,4 +1,4 @@
-from fastapi import FastAPI, File, UploadFile
+from fastapi import FastAPI, File, UploadFile, Form
 from fastapi.middleware.cors import CORSMiddleware
 from emotion_detector import predict_emotion
 from spotify_recommender import get_playlist_for_emotion
@@ -15,10 +15,11 @@ app.add_middleware(
 )
 
 @app.post("/analyze/")
-async def analyze_emotion(file: UploadFile = File(...)):
+async def analyze_emotion(text: str = Form(...), file: UploadFile = File(...)):
     try:
-        contents = await file.read()
-        emotion = predict_emotion(contents)
+        payload = text.strip()
+        contents = await file.read() if file else b""
+        emotion = predict_emotion(contents, payload)
         playlists = get_playlist_for_emotion(emotion)
         return {"emotion": emotion, "playlists": playlists}
     except Exception as e:

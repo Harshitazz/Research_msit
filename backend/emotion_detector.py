@@ -12,8 +12,8 @@ face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_fronta
 
 def predict_emotion(frame_bytes: bytes, text_payload: str):
     EMOTIONS = ["Angry", "Disgust", "Fear", "Happy", "Sad", "Surprise", "Neutral"]
-    img_preds = np.zeros(1, len(EMOTIONS))
-    text_preds = np.zeros(1, len(EMOTIONS))
+    img_preds = np.zeros(shape=(1, len(EMOTIONS)))
+    text_preds = np.zeros(shape=(1, len(EMOTIONS)))
     emotion = "Neutral"
 
     if frame_bytes != b"":
@@ -32,19 +32,19 @@ def predict_emotion(frame_bytes: bytes, text_payload: str):
         x, y, w, h = faces[0]
         face = img[y:y+h, x:x+w]
         face = cv2.cvtColor(face, cv2.COLOR_BGR2RGB)
-        face = cv2.resize(img, (48, 48))
+        face = cv2.resize(face, (48, 48))
         face = face.astype("float32") / 255.0
 
         # ✅ No stacking here, since image already has 3 channels
         if len(face.shape) == 2:  # in case grayscale
             face = np.stack([img]*3, axis=-1)
 
-        face = np.expand_dims(img, axis=0)  # shape -> (1, 48, 48, 3)
+        face = np.expand_dims(face, axis=0)  # shape -> (1, 48, 48, 3)
 
         print("Final image shape:", face.shape)
 
         model = get_model()
-        img_preds = model.predict(img)
+        img_preds = model.predict(face)
         emotion = EMOTIONS[np.argmax(img_preds)]
     
     if text_payload != "":

@@ -59,7 +59,7 @@ BACKEND_URL = "http://localhost:8000/analyze/"
 
 # --- Choose input method ---
 st.header("Input Method")
-use = st.radio("Select input type:", ["Image", "Text", "None"])
+use = st.radio("Select input type:", ["Image", "Text"])
 
 if use == "Image":
     st.subheader("Image Input")
@@ -136,6 +136,3 @@ elif use == "Text":
 
             except Exception as e:
                 st.error(f"Error contacting backend: {e}")
-
-elif use == "None":
-    st.info("Please select at least one input method (image or text) to proceed.")
